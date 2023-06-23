@@ -1,11 +1,9 @@
 from .models import (
     Category,
     MenuItem,
+    Cart,
 )
-from .serializers import (
-    CategorySerializer,
-    MenuItemSerializer,
-)
+from .serializers import CategorySerializer, MenuItemSerializer, CartSerializer
 
 from rest_framework import generics
 from rest_framework.permissions import (
@@ -57,3 +55,20 @@ class SingleMenuItemView(generics.RetrieveUpdateDestroyAPIView):
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
+
+
+class CartView(generics.ListCreateAPIView):
+    """View for viewing cart items, adding items to cart and deleting items from cart."""
+
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+
+    # GET Method
+    def get_queryset(self):
+        return Cart.objects.all().filter(user=self.request.user)
+
+    # DELETE Method
+    def delete(self, request, *args, **kwargs):
+        Cart.objects.all().filter(user=self.request.user).delete()
+        return Response("OK: Items deleted from cart.")
